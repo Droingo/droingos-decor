@@ -266,7 +266,7 @@ public final class WallDecorRenderer
         Vec3 decorRight =
                 worldLocalX.scale(cos)
                         .add(
-                                worldLocalZ.scale(sin)
+                                worldLocalZ.scale(-sin)
                         )
                         .normalize();
 
@@ -278,7 +278,7 @@ public final class WallDecorRenderer
          * Local -Z therefore points away from the wall.
          */
         Vec3 towardWall =
-                worldLocalX.scale(-sin)
+                worldLocalX.scale(sin)
                         .add(
                                 worldLocalZ.scale(cos)
                         )
@@ -299,7 +299,7 @@ public final class WallDecorRenderer
          * periodic Sable projection corrections.
          */
         motion.update(
-                level.getGameTime() + partialTick,
+                System.nanoTime() * 1.0E-9D,
                 worldOrigin,
                 decorRight,
                 decorUp,

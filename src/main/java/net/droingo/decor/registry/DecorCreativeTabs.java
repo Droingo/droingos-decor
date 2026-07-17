@@ -38,13 +38,46 @@ public final class DecorCreativeTabs {
 
                                 DecorCategory activeCategory = null;
                                 int occupiedSlots = 0;
+                                int spacerIndex = 0;
 
                                 for (DecorDefinition definition : definitions) {
                                     if (definition.category() != activeCategory) {
-                                        occupiedSlots = padToNextRow(
-                                                output,
+                                        int remainder =
                                                 occupiedSlots
-                                        );
+                                                        % CREATIVE_ROW_WIDTH;
+
+                                        if (remainder != 0) {
+                                            int padding =
+                                                    CREATIVE_ROW_WIDTH
+                                                            - remainder;
+
+                                            for (
+                                                    int index = 0;
+                                                    index < padding;
+                                                    index++
+                                            ) {
+                                                if (
+                                                        spacerIndex
+                                                                >= DecorItems
+                                                                .CREATIVE_SPACERS
+                                                                .size()
+                                                ) {
+                                                    throw new IllegalStateException(
+                                                            "Not enough unique creative spacers"
+                                                    );
+                                                }
+
+                                                output.accept(
+                                                        DecorItems
+                                                                .CREATIVE_SPACERS
+                                                                .get(spacerIndex++)
+                                                                .get()
+                                                                .getDefaultInstance()
+                                                );
+
+                                                occupiedSlots++;
+                                            }
+                                        }
 
                                         occupiedSlots += addHeader(
                                                 output,
@@ -64,32 +97,14 @@ public final class DecorCreativeTabs {
     private DecorCreativeTabs() {
     }
 
-    private static int padToNextRow(
-            CreativeModeTab.Output output,
-            int occupiedSlots
-    ) {
-        int remainder = occupiedSlots % CREATIVE_ROW_WIDTH;
-
-        if (remainder == 0) {
-            return occupiedSlots;
-        }
-
-        int padding = CREATIVE_ROW_WIDTH - remainder;
-
-        for (int index = 0; index < padding; index++) {
-            output.accept(
-                    DecorItems.CREATIVE_SPACER.get().getDefaultInstance()
-            );
-        }
-
-        return occupiedSlots + padding;
-    }
-
     private static int addHeader(
             CreativeModeTab.Output output,
             DecorCategory category
     ) {
-        for (DeferredItem<?> piece : DecorItems.creativeHeader(category)) {
+        for (
+                DeferredItem<?> piece
+                : DecorItems.creativeHeader(category)
+        ) {
             output.accept(piece.get().getDefaultInstance());
         }
 

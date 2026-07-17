@@ -76,7 +76,11 @@ public final class DecorDefinitionRegistry {
                                 )
                         )
                         .interaction((level, pos, player, container, slot) -> {
-                            if (!level.isClientSide) {
+                            if (level.isClientSide) {
+                                net.droingo.decor.client.animation
+                                        .BobbleheadInteractionPulses
+                                        .trigger(container, slot);
+                            } else {
                                 float pitch =
                                         1.45F
                                                 + level.random.nextFloat()
@@ -136,9 +140,27 @@ public final class DecorDefinitionRegistry {
                         })
                         .build()
         );
-    }
+        ResourceLocation mossyBottomId = id("mossy_bottom");
 
-    public static DecorDefinition register(DecorDefinition definition) {
+        register(
+                DecorDefinition.builder(mossyBottomId)
+                        .category(DecorCategory.OVERLAYS)
+                        .placement(DecorPlacementType.OVERLAY)
+                        .item(DecorItems.MOSSY_BOTTOM::get)
+                        .build()
+        );
+
+        ResourceLocation wetBottomId = id("wet_bottom");
+
+        register(
+                DecorDefinition.builder(wetBottomId)
+                        .category(DecorCategory.OVERLAYS)
+                        .placement(DecorPlacementType.OVERLAY)
+                        .item(DecorItems.WET_BOTTOM::get)
+                        .build()
+        );
+    }
+public static DecorDefinition register(DecorDefinition definition) {
         DecorDefinition previous =
                 DEFINITIONS.putIfAbsent(definition.id(), definition);
 

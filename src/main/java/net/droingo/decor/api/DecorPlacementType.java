@@ -7,5 +7,5 @@ public enum DecorPlacementType {
     FULL,
     LARGE,
     WALL,
-    HANGING
+    HANGING, OVERLAY
 }

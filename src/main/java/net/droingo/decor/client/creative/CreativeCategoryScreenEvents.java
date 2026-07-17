@@ -280,7 +280,7 @@ public final class CreativeCategoryScreenEvents {
 
         String path = id.getPath();
 
-        return path.equals("creative_spacer")
+        return path.startsWith("creative_spacer_")
                 || path.startsWith(HEADER_PREFIX);
     }
 
@@ -321,6 +321,8 @@ public final class CreativeCategoryScreenEvents {
                 "outdoor_decor",
                 Component.literal("Outdoor Decor")
         );
+
+        labels.put("overlays", Component.literal("Overlays"));
 
         return Map.copyOf(labels);
     }

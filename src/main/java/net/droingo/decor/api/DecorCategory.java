@@ -9,7 +9,8 @@ public enum DecorCategory {
     SMALL_DECOR("small_decor", 30),
     FURNITURE("furniture", 40),
     LIGHTING("lighting", 50),
-    OUTDOOR_DECOR("outdoor_decor", 60);
+    OUTDOOR_DECOR("outdoor_decor", 60),
+    OVERLAYS("overlays", 70);
 
     private final String translationKeyPart;
     private final int order;

@@ -4,6 +4,7 @@ import net.droingo.decor.DroingosDecor;
 import net.droingo.decor.api.DecorCategory;
 import net.droingo.decor.content.TinyDecorItem;
 import net.droingo.decor.content.WallDecorItem;
+import net.droingo.decor.content.overlay.OverlayItem;
 import net.minecraft.world.item.Item;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredItem;
@@ -28,8 +29,8 @@ public final class DecorItems {
      * banner. Mouse input and tooltips are suppressed by
      * CreativeCategoryScreenEvents.
      */
-    public static final DeferredItem<Item> CREATIVE_SPACER =
-            registerInternalItem("creative_spacer");
+    public static final List<DeferredItem<Item>> CREATIVE_SPACERS =
+            registerSpacers();
 
     public static final List<DeferredItem<Item>> BOBBLEHEAD_HEADER =
             registerHeader("bobbleheads");
@@ -60,6 +61,25 @@ public final class DecorItems {
                     new Item.Properties()
             )
     );
+
+    public static final DeferredItem<Item> MOSSY_BOTTOM = ITEMS.register(
+            "mossy_bottom",
+            () -> new OverlayItem(
+                    "mossy_bottom",
+                    new Item.Properties()
+            )
+    );
+
+    public static final DeferredItem<Item> WET_BOTTOM = ITEMS.register(
+            "wet_bottom",
+            () -> new OverlayItem(
+                    "wet_bottom",
+                    new Item.Properties()
+            )
+    );
+
+    public static final List<DeferredItem<Item>> OVERLAYS_HEADER =
+            registerHeader("overlays");
     private DecorItems() {
     }
 
@@ -70,6 +90,18 @@ public final class DecorItems {
         );
     }
 
+
+    private static List<DeferredItem<Item>> registerSpacers() {
+        List<DeferredItem<Item>> spacers = new ArrayList<>(64);
+
+        for (int index = 0; index < 64; index++) {
+            spacers.add(registerInternalItem(
+                    "creative_spacer_" + index
+            ));
+        }
+
+        return List.copyOf(spacers);
+    }
     private static List<DeferredItem<Item>> registerHeader(String categoryName) {
         List<DeferredItem<Item>> pieces = new ArrayList<>(9);
 
@@ -93,6 +125,7 @@ public final class DecorItems {
             case FURNITURE -> FURNITURE_HEADER;
             case LIGHTING -> LIGHTING_HEADER;
             case OUTDOOR_DECOR -> OUTDOOR_DECOR_HEADER;
+            case OVERLAYS -> OVERLAYS_HEADER;
         };
     }
 

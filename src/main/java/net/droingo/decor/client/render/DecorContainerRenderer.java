@@ -6,6 +6,7 @@ import com.mojang.math.Axis;
 import dev.ryanhcode.sable.Sable;
 import net.droingo.decor.api.BobbleheadRenderDefinition;
 import net.droingo.decor.api.DecorDefinition;
+import net.droingo.decor.client.animation.BobbleheadInteractionPulses;
 import net.droingo.decor.client.animation.BobbleheadMotionState;
 import net.droingo.decor.content.DecorContainerBlockEntity;
 import net.droingo.decor.registry.DecorDefinitionRegistry;
@@ -81,6 +82,11 @@ public final class DecorContainerRenderer implements BlockEntityRenderer<DecorCo
         float yawDegrees = blockEntity.getRotation(slot) * 22.5F;
 
         BobbleheadMotionState motion = getMotionState(blockEntity, slot);
+
+        if (BobbleheadInteractionPulses.consume(blockEntity, slot)) {
+            motion.addInteractionImpulse();
+        }
+
         updateMotion(blockEntity, motion, centreX, centreZ, yawDegrees, render.pivot().y, partialTick);
 
         poseStack.pushPose();

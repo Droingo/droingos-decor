@@ -8,12 +8,12 @@ import java.util.Arrays;
 /**
  * Lightweight client-side bobblehead spring.
  *
- * Sable projected positions can occasionally receive small correction jumps.
- * Differentiating those positions directly creates false acceleration impulses.
+ * Motion capture uses a monotonic real-time clock and observes the projected
+ * position every rendered frame. Repeated identical projected positions are
+ * ignored instead of being recorded as zero-velocity samples.
  *
- * Raw velocity is therefore passed through a five-sample component-wise median
- * filter before acceleration is calculated. Isolated corrections disappear,
- * while sustained acceleration, braking and collisions remain visible.
+ * This makes the bobblehead independent from world game-time timing and from
+ * the exact point in the tick when Sable publishes a new projected transform.
  */
 public final class BobbleheadMotionState {
     private static final float MAX_ANGLE_DEGREES = 38.0F;
@@ -32,12 +32,16 @@ public final class BobbleheadMotionState {
 
     private static final int VELOCITY_FILTER_SIZE = 5;
 
+    private static final double POSITION_CHANGE_EPSILON_SQR = 1.0E-12D;
+    private static final double MAX_SAMPLE_GAP_SECONDS = 0.50D;
+    private static final double MAX_RENDER_GAP_SECONDS = 0.25D;
+
     private boolean initialized;
 
-    private double lastRenderTime;
-    private long lastSampleTick;
+    private double lastRenderSeconds;
+    private double lastMotionSampleSeconds;
 
-    private Vec3 lastSamplePosition = Vec3.ZERO;
+    private Vec3 lastObservedPosition = Vec3.ZERO;
     private Vec3 lastFilteredVelocity = Vec3.ZERO;
 
     private final Vec3[] velocitySamples =
@@ -55,77 +59,138 @@ public final class BobbleheadMotionState {
     private float pitchVelocity;
     private float rollVelocity;
 
+    private float interactionRollDirection = 1.0F;
+
+    /**
+     * The timeline argument is retained so existing renderer calls remain
+     * source-compatible. Motion timing now comes from System.nanoTime().
+     */
     public void update(
-            double timelineTime,
+            double ignoredTimelineTime,
             Vec3 worldPosition,
             Vec3 parrotRight,
             Vec3 parrotForward
     ) {
-        long currentTick = (long) Math.floor(timelineTime);
+        double nowSeconds =
+                System.nanoTime() * 1.0E-9D;
+
+        if (
+                !Double.isFinite(nowSeconds)
+                        || !isFinite(worldPosition)
+        ) {
+            return;
+        }
 
         if (!initialized) {
-            reset(timelineTime, currentTick, worldPosition);
+            reset(nowSeconds, worldPosition);
             return;
         }
 
-        double renderDeltaTicks = timelineTime - lastRenderTime;
+        double renderDeltaSeconds =
+                nowSeconds - lastRenderSeconds;
 
         /*
-         * Protect against replay seeking, time reversal and long periods where
-         * this decoration was not rendered.
+         * Protect against long render gaps, pauses and debugger stalls.
          */
-        if (renderDeltaTicks <= 0.0D || renderDeltaTicks > 4.0D) {
-            reset(timelineTime, currentTick, worldPosition);
+        if (
+                renderDeltaSeconds <= 0.0D
+                        || renderDeltaSeconds > MAX_RENDER_GAP_SECONDS
+        ) {
+            reset(nowSeconds, worldPosition);
             return;
         }
 
-        /*
-         * Sample movement only once per game tick.
-         */
-        if (currentTick != lastSampleTick) {
-            long sampleDeltaTicks = currentTick - lastSampleTick;
+        Vec3 positionDelta =
+                worldPosition.subtract(lastObservedPosition);
 
-            if (sampleDeltaTicks <= 0L || sampleDeltaTicks > 4L) {
-                reset(timelineTime, currentTick, worldPosition);
-                return;
+        /*
+         * Only produce a velocity sample when Sable publishes a genuinely new
+         * projected position. Repeated positions are not fake zero movement.
+         */
+        if (
+                positionDelta.lengthSqr()
+                        > POSITION_CHANGE_EPSILON_SQR
+        ) {
+            double sampleDeltaSeconds =
+                    nowSeconds - lastMotionSampleSeconds;
+
+            if (
+                    sampleDeltaSeconds > 0.0D
+                            && sampleDeltaSeconds
+                            <= MAX_SAMPLE_GAP_SECONDS
+            ) {
+                sampleVehicleMotion(
+                        worldPosition,
+                        parrotRight,
+                        parrotForward,
+                        sampleDeltaSeconds
+                );
+            } else {
+                clearVelocityFilter();
+                lastFilteredVelocity = Vec3.ZERO;
+                targetPitchDegrees = 0.0F;
+                targetRollDegrees = 0.0F;
             }
 
-            sampleVehicleMotion(
-                    worldPosition,
-                    parrotRight,
-                    parrotForward,
-                    sampleDeltaTicks
-            );
+            lastObservedPosition = worldPosition;
+            lastMotionSampleSeconds = nowSeconds;
+        } else {
+            /*
+             * Let an old input decay naturally if no new projected transform
+             * has arrived for a short period.
+             */
+            double idleSeconds =
+                    nowSeconds - lastMotionSampleSeconds;
 
-            lastSampleTick = currentTick;
-            lastSamplePosition = worldPosition;
+            if (idleSeconds > 0.15D) {
+                targetPitchDegrees *= 0.82F;
+                targetRollDegrees *= 0.82F;
+            }
         }
 
         /*
-         * Render the spring smoothly every frame.
+         * Keep spring tuning in Minecraft-tick units so it behaves like the
+         * original spring regardless of frame rate.
          */
-        integrateSpring((float) renderDeltaTicks);
+        float renderDeltaTicks =
+                (float) (renderDeltaSeconds * 20.0D);
 
-        lastRenderTime = timelineTime;
+        integrateSpring(
+                Mth.clamp(
+                        renderDeltaTicks,
+                        0.0F,
+                        2.0F
+                )
+        );
+
+        lastRenderSeconds = nowSeconds;
     }
 
     private void sampleVehicleMotion(
             Vec3 worldPosition,
             Vec3 parrotRight,
             Vec3 parrotForward,
-            long sampleDeltaTicks
+            double sampleDeltaSeconds
     ) {
-        double deltaTicks = sampleDeltaTicks;
+        double sampleDeltaTicks =
+                sampleDeltaSeconds * 20.0D;
+
+        if (sampleDeltaTicks <= 0.0001D) {
+            return;
+        }
 
         Vec3 rawVelocity = worldPosition
-                .subtract(lastSamplePosition)
-                .scale(1.0D / deltaTicks);
+                .subtract(lastObservedPosition)
+                .scale(1.0D / sampleDeltaTicks);
 
         /*
-         * Treat huge discontinuities as teleports or replay/sublevel projection
-         * changes rather than physical movement.
+         * Treat huge discontinuities as teleports or projection changes rather
+         * than physical movement.
          */
-        if (rawVelocity.lengthSqr() > MAX_SAMPLE_SPEED * MAX_SAMPLE_SPEED) {
+        if (
+                rawVelocity.lengthSqr()
+                        > MAX_SAMPLE_SPEED * MAX_SAMPLE_SPEED
+        ) {
             clearVelocityFilter();
 
             lastFilteredVelocity = Vec3.ZERO;
@@ -136,51 +201,66 @@ public final class BobbleheadMotionState {
 
         addVelocitySample(rawVelocity);
 
-        Vec3 filteredVelocity = getFilteredVelocity();
+        Vec3 filteredVelocity =
+                getFilteredVelocity();
 
         Vec3 worldAcceleration = filteredVelocity
                 .subtract(lastFilteredVelocity)
-                .scale(1.0D / deltaTicks);
+                .scale(1.0D / sampleDeltaTicks);
 
-        double accelerationLength = worldAcceleration.length();
+        double accelerationLength =
+                worldAcceleration.length();
 
-        if (accelerationLength < ACCELERATION_DEAD_ZONE) {
+        if (
+                accelerationLength
+                        < ACCELERATION_DEAD_ZONE
+        ) {
             worldAcceleration = Vec3.ZERO;
-        } else if (accelerationLength > MAX_SAMPLE_ACCELERATION) {
-            worldAcceleration = worldAcceleration.scale(
-                    MAX_SAMPLE_ACCELERATION / accelerationLength
-            );
+        } else if (
+                accelerationLength
+                        > MAX_SAMPLE_ACCELERATION
+        ) {
+            worldAcceleration =
+                    worldAcceleration.scale(
+                            MAX_SAMPLE_ACCELERATION
+                                    / accelerationLength
+                    );
         }
 
-        /*
-         * Convert world acceleration into the parrot's own local axes.
-         */
         double rightAcceleration =
                 worldAcceleration.dot(parrotRight);
 
         double forwardAcceleration =
                 worldAcceleration.dot(parrotForward);
 
-        if (Math.abs(rightAcceleration) < ACCELERATION_DEAD_ZONE) {
+        if (
+                Math.abs(rightAcceleration)
+                        < ACCELERATION_DEAD_ZONE
+        ) {
             rightAcceleration = 0.0D;
         }
 
-        if (Math.abs(forwardAcceleration) < ACCELERATION_DEAD_ZONE) {
+        if (
+                Math.abs(forwardAcceleration)
+                        < ACCELERATION_DEAD_ZONE
+        ) {
             forwardAcceleration = 0.0D;
         }
 
-        /*
-         * Sideways acceleration drives Z-axis roll.
-         * Forward acceleration drives X-axis pitch.
-         */
         targetRollDegrees = Mth.clamp(
-                (float) (rightAcceleration * ACCELERATION_GAIN),
+                (float) (
+                        -rightAcceleration
+                                * ACCELERATION_GAIN
+                ),
                 -MAX_ANGLE_DEGREES,
                 MAX_ANGLE_DEGREES
         );
 
         targetPitchDegrees = Mth.clamp(
-                (float) (-forwardAcceleration * ACCELERATION_GAIN),
+                (float) (
+                        forwardAcceleration
+                                * ACCELERATION_GAIN
+                ),
                 -MAX_ANGLE_DEGREES,
                 MAX_ANGLE_DEGREES
         );
@@ -189,48 +269,79 @@ public final class BobbleheadMotionState {
     }
 
     private void addVelocitySample(Vec3 velocity) {
-        velocitySamples[velocitySampleIndex] = velocity;
+        velocitySamples[velocitySampleIndex] =
+                velocity;
 
         velocitySampleIndex =
-                (velocitySampleIndex + 1) % VELOCITY_FILTER_SIZE;
+                (velocitySampleIndex + 1)
+                        % VELOCITY_FILTER_SIZE;
 
-        if (velocitySampleCount < VELOCITY_FILTER_SIZE) {
+        if (
+                velocitySampleCount
+                        < VELOCITY_FILTER_SIZE
+        ) {
             velocitySampleCount++;
         }
     }
 
     private Vec3 getFilteredVelocity() {
+        if (velocitySampleCount == 0) {
+            return Vec3.ZERO;
+        }
+
         /*
          * Until enough history exists, average the available samples. Once the
          * buffer is full, use the median to reject isolated correction spikes.
          */
-        if (velocitySampleCount < VELOCITY_FILTER_SIZE) {
+        if (
+                velocitySampleCount
+                        < VELOCITY_FILTER_SIZE
+        ) {
             Vec3 total = Vec3.ZERO;
 
-            for (int i = 0; i < velocitySampleCount; i++) {
-                total = total.add(velocitySamples[i]);
+            for (
+                    int index = 0;
+                    index < velocitySampleCount;
+                    index++
+            ) {
+                total = total.add(
+                        velocitySamples[index]
+                );
             }
 
-            return total.scale(1.0D / velocitySampleCount);
+            return total.scale(
+                    1.0D / velocitySampleCount
+            );
         }
 
-        double[] xValues = new double[VELOCITY_FILTER_SIZE];
-        double[] yValues = new double[VELOCITY_FILTER_SIZE];
-        double[] zValues = new double[VELOCITY_FILTER_SIZE];
+        double[] xValues =
+                new double[VELOCITY_FILTER_SIZE];
 
-        for (int i = 0; i < VELOCITY_FILTER_SIZE; i++) {
-            Vec3 sample = velocitySamples[i];
+        double[] yValues =
+                new double[VELOCITY_FILTER_SIZE];
 
-            xValues[i] = sample.x;
-            yValues[i] = sample.y;
-            zValues[i] = sample.z;
+        double[] zValues =
+                new double[VELOCITY_FILTER_SIZE];
+
+        for (
+                int index = 0;
+                index < VELOCITY_FILTER_SIZE;
+                index++
+        ) {
+            Vec3 sample =
+                    velocitySamples[index];
+
+            xValues[index] = sample.x;
+            yValues[index] = sample.y;
+            zValues[index] = sample.z;
         }
 
         Arrays.sort(xValues);
         Arrays.sort(yValues);
         Arrays.sort(zValues);
 
-        int middle = VELOCITY_FILTER_SIZE / 2;
+        int middle =
+                VELOCITY_FILTER_SIZE / 2;
 
         return new Vec3(
                 xValues[middle],
@@ -240,7 +351,10 @@ public final class BobbleheadMotionState {
     }
 
     private void clearVelocityFilter() {
-        Arrays.fill(velocitySamples, null);
+        Arrays.fill(
+                velocitySamples,
+                Vec3.ZERO
+        );
 
         velocitySampleCount = 0;
         velocitySampleIndex = 0;
@@ -265,8 +379,11 @@ public final class BobbleheadMotionState {
         pitchVelocity *= damping;
         rollVelocity *= damping;
 
-        pitchDegrees += pitchVelocity * deltaTicks;
-        rollDegrees += rollVelocity * deltaTicks;
+        pitchDegrees +=
+                pitchVelocity * deltaTicks;
+
+        rollDegrees +=
+                rollVelocity * deltaTicks;
 
         applyPitchLimit();
         applyRollLimit();
@@ -275,24 +392,30 @@ public final class BobbleheadMotionState {
 
     private void settleAtEquilibrium() {
         boolean noMeaningfulInput =
-                Math.abs(targetPitchDegrees) < SETTLE_ANGLE_DEGREES
-                        && Math.abs(targetRollDegrees) < SETTLE_ANGLE_DEGREES;
+                Math.abs(targetPitchDegrees)
+                        < SETTLE_ANGLE_DEGREES
+                        && Math.abs(targetRollDegrees)
+                        < SETTLE_ANGLE_DEGREES;
 
         if (!noMeaningfulInput) {
             return;
         }
 
         if (
-                Math.abs(pitchDegrees) < SETTLE_ANGLE_DEGREES
-                        && Math.abs(pitchVelocity) < SETTLE_VELOCITY
+                Math.abs(pitchDegrees)
+                        < SETTLE_ANGLE_DEGREES
+                        && Math.abs(pitchVelocity)
+                        < SETTLE_VELOCITY
         ) {
             pitchDegrees = 0.0F;
             pitchVelocity = 0.0F;
         }
 
         if (
-                Math.abs(rollDegrees) < SETTLE_ANGLE_DEGREES
-                        && Math.abs(rollVelocity) < SETTLE_VELOCITY
+                Math.abs(rollDegrees)
+                        < SETTLE_ANGLE_DEGREES
+                        && Math.abs(rollVelocity)
+                        < SETTLE_VELOCITY
         ) {
             rollDegrees = 0.0F;
             rollVelocity = 0.0F;
@@ -306,7 +429,10 @@ public final class BobbleheadMotionState {
             if (pitchVelocity > 0.0F) {
                 pitchVelocity *= -0.18F;
             }
-        } else if (pitchDegrees < -MAX_ANGLE_DEGREES) {
+        } else if (
+                pitchDegrees
+                        < -MAX_ANGLE_DEGREES
+        ) {
             pitchDegrees = -MAX_ANGLE_DEGREES;
 
             if (pitchVelocity < 0.0F) {
@@ -322,7 +448,10 @@ public final class BobbleheadMotionState {
             if (rollVelocity > 0.0F) {
                 rollVelocity *= -0.18F;
             }
-        } else if (rollDegrees < -MAX_ANGLE_DEGREES) {
+        } else if (
+                rollDegrees
+                        < -MAX_ANGLE_DEGREES
+        ) {
             rollDegrees = -MAX_ANGLE_DEGREES;
 
             if (rollVelocity < 0.0F) {
@@ -332,16 +461,15 @@ public final class BobbleheadMotionState {
     }
 
     private void reset(
-            double timelineTime,
-            long currentTick,
+            double nowSeconds,
             Vec3 worldPosition
     ) {
         initialized = true;
 
-        lastRenderTime = timelineTime;
-        lastSampleTick = currentTick;
+        lastRenderSeconds = nowSeconds;
+        lastMotionSampleSeconds = nowSeconds;
 
-        lastSamplePosition = worldPosition;
+        lastObservedPosition = worldPosition;
         lastFilteredVelocity = Vec3.ZERO;
 
         clearVelocityFilter();
@@ -356,6 +484,20 @@ public final class BobbleheadMotionState {
         rollVelocity = 0.0F;
     }
 
+    private static boolean isFinite(Vec3 value) {
+        return Double.isFinite(value.x)
+                && Double.isFinite(value.y)
+                && Double.isFinite(value.z);
+    }
+
+    /**
+     * Gives the head a short nod and a small alternating sideways wobble.
+     */
+    public void addInteractionImpulse() {
+        pitchVelocity += 6.5F;
+        rollVelocity += 2.25F * interactionRollDirection;
+        interactionRollDirection = -interactionRollDirection;
+    }
     public float getPitchDegrees() {
         return pitchDegrees;
     }
