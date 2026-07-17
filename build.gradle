@@ -41,6 +41,10 @@ repositories {
         name = 'tterrag'
         url = 'https://maven.ithundxr.dev/snapshots'
     }
+    maven {
+        name = 'RyanHCode'
+        url = 'https://maven.ryanhcode.dev/releases'
+    }
     exclusiveContent {
         forRepository {
             maven {
@@ -108,7 +112,14 @@ dependencies {
     }
 
     implementation("maven.modrinth:sable:${sable_version}")
-    implementation("maven.modrinth:create-aeronautics:${aeronautics_version}")
+    
+
+    jarJar(api(
+            "dev.ryanhcode.sable-companion:" +
+            "sable-companion-common-${minecraft_version}:" +
+            "${sable_companion_version}"
+    ))
+implementation("maven.modrinth:create-aeronautics:${aeronautics_version}")
     implementation("net.createmod.ponder:ponder-neoforge:${ponder_version}+mc${minecraft_version}")
 
     compileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-${minecraft_version}:${flywheel_version}")
@@ -147,3 +158,4 @@ idea {
         downloadJavadoc = true
     }
 }
+
