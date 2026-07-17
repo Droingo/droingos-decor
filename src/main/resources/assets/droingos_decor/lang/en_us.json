@@ -1,4 +1,5 @@
 {
-  "itemGroup.droingos_decor.main": "Droingo's Decor",
-  "decor.droingos_decor.bobble_parrot": "Bobblehead Parrot"
+  "item.droingos_decor.bobble_parrot": "Bobblehead Parrot",
+  "block.droingos_decor.decor_container": "Decor Container",
+  "itemGroup.droingos_decor.main": "Droingo's Decor"
 }
