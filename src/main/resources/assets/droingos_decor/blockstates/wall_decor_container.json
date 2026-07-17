@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "droingos_decor:block/wall_decor_container"
+    },
+    "facing=south": {
+      "model": "droingos_decor:block/wall_decor_container"
+    },
+    "facing=east": {
+      "model": "droingos_decor:block/wall_decor_container"
+    },
+    "facing=west": {
+      "model": "droingos_decor:block/wall_decor_container"
+    }
+  }
+}

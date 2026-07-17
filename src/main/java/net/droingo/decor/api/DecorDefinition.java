@@ -14,13 +14,16 @@ public final class DecorDefinition {
     private final DecorPlacementType placementType;
     private final Supplier<? extends Item> itemSupplier;
     private final DecorInteraction interaction;
+
     private final double minX;
     private final double minY;
     private final double minZ;
     private final double maxX;
     private final double maxY;
     private final double maxZ;
+
     private final @Nullable BobbleheadRenderDefinition bobbleheadRender;
+    private final @Nullable GravityWallRenderDefinition gravityWallRender;
 
     private DecorDefinition(Builder builder) {
         this.id = builder.id;
@@ -28,30 +31,69 @@ public final class DecorDefinition {
         this.placementType = builder.placementType;
         this.itemSupplier = builder.itemSupplier;
         this.interaction = builder.interaction;
+
         this.minX = builder.minX;
         this.minY = builder.minY;
         this.minZ = builder.minZ;
         this.maxX = builder.maxX;
         this.maxY = builder.maxY;
         this.maxZ = builder.maxZ;
+
         this.bobbleheadRender = builder.bobbleheadRender;
+        this.gravityWallRender = builder.gravityWallRender;
     }
 
     public static Builder builder(ResourceLocation id) {
         return new Builder(id);
     }
 
-    public ResourceLocation id() { return id; }
-    public DecorCategory category() { return category; }
-    public DecorPlacementType placementType() { return placementType; }
-    public DecorInteraction interaction() { return interaction; }
-    public double minX() { return minX; }
-    public double minY() { return minY; }
-    public double minZ() { return minZ; }
-    public double maxX() { return maxX; }
-    public double maxY() { return maxY; }
-    public double maxZ() { return maxZ; }
-    public @Nullable BobbleheadRenderDefinition bobbleheadRender() { return bobbleheadRender; }
+    public ResourceLocation id() {
+        return id;
+    }
+
+    public DecorCategory category() {
+        return category;
+    }
+
+    public DecorPlacementType placementType() {
+        return placementType;
+    }
+
+    public DecorInteraction interaction() {
+        return interaction;
+    }
+
+    public double minX() {
+        return minX;
+    }
+
+    public double minY() {
+        return minY;
+    }
+
+    public double minZ() {
+        return minZ;
+    }
+
+    public double maxX() {
+        return maxX;
+    }
+
+    public double maxY() {
+        return maxY;
+    }
+
+    public double maxZ() {
+        return maxZ;
+    }
+
+    public @Nullable BobbleheadRenderDefinition bobbleheadRender() {
+        return bobbleheadRender;
+    }
+
+    public @Nullable GravityWallRenderDefinition gravityWallRender() {
+        return gravityWallRender;
+    }
 
     public ItemStack pickupStack() {
         return new ItemStack(itemSupplier.get());
@@ -59,17 +101,21 @@ public final class DecorDefinition {
 
     public static final class Builder {
         private final ResourceLocation id;
+
         private DecorCategory category = DecorCategory.SMALL_DECOR;
         private DecorPlacementType placementType = DecorPlacementType.TINY;
         private Supplier<? extends Item> itemSupplier;
         private DecorInteraction interaction = DecorInteraction.NONE;
+
         private double minX = -0.125D;
         private double minY = 0.0D;
         private double minZ = -0.125D;
         private double maxX = 0.125D;
         private double maxY = 0.5D;
         private double maxZ = 0.125D;
+
         private BobbleheadRenderDefinition bobbleheadRender;
+        private GravityWallRenderDefinition gravityWallRender;
 
         private Builder(ResourceLocation id) {
             this.id = Objects.requireNonNull(id);
@@ -96,8 +142,12 @@ public final class DecorDefinition {
         }
 
         public Builder bounds(
-                double minX, double minY, double minZ,
-                double maxX, double maxY, double maxZ
+                double minX,
+                double minY,
+                double minZ,
+                double maxX,
+                double maxY,
+                double maxZ
         ) {
             this.minX = minX;
             this.minY = minY;
@@ -113,10 +163,25 @@ public final class DecorDefinition {
             return this;
         }
 
+        public Builder gravityWall(GravityWallRenderDefinition renderDefinition) {
+            this.gravityWallRender = Objects.requireNonNull(renderDefinition);
+            return this;
+        }
+
         public DecorDefinition build() {
             if (itemSupplier == null) {
-                throw new IllegalStateException("Decor definition " + id + " has no item supplier");
+                throw new IllegalStateException(
+                        "Decor definition " + id + " has no item supplier"
+                );
             }
+
+            if (bobbleheadRender != null && gravityWallRender != null) {
+                throw new IllegalStateException(
+                        "Decor definition " + id
+                                + " cannot use two render behaviours"
+                );
+            }
+
             return new DecorDefinition(this);
         }
     }
