@@ -293,6 +293,11 @@ public final class CreativeCategoryScreenEvents {
         );
 
         labels.put(
+                "half_blocks",
+                Component.literal("Half Blocks")
+        );
+
+        labels.put(
                 "wall_decor",
                 Component.literal("Wall Decor")
         );

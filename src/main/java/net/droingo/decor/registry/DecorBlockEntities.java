@@ -2,6 +2,7 @@ package net.droingo.decor.registry;
 
 import net.droingo.decor.DroingosDecor;
 import net.droingo.decor.content.DecorContainerBlockEntity;
+import net.droingo.decor.content.HalfDecorBlockEntity;
 import net.droingo.decor.content.WallDecorBlockEntity;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -24,6 +25,17 @@ public final class DecorBlockEntities {
             () -> BlockEntityType.Builder.of(
                     DecorContainerBlockEntity::new,
                     DecorBlocks.DECOR_CONTAINER.get()
+            ).build(null)
+    );
+
+    public static final DeferredHolder<
+            BlockEntityType<?>,
+            BlockEntityType<HalfDecorBlockEntity>
+            > HALF_DECOR_CONTAINER = TYPES.register(
+            "half_decor_container",
+            () -> BlockEntityType.Builder.of(
+                    HalfDecorBlockEntity::new,
+                    DecorBlocks.HALF_DECOR_CONTAINER.get()
             ).build(null)
     );
 

@@ -2,6 +2,7 @@ package net.droingo.decor.registry;
 
 import net.droingo.decor.DroingosDecor;
 import net.droingo.decor.content.DecorContainerBlock;
+import net.droingo.decor.content.HalfDecorBlock;
 import net.droingo.decor.content.WallDecorBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -18,6 +19,18 @@ public final class DecorBlocks {
             BLOCKS.registerBlock(
                     "decor_container",
                     DecorContainerBlock::new,
+                    BlockBehaviour.Properties.of()
+                            .mapColor(MapColor.NONE)
+                            .strength(0.2F)
+                            .sound(SoundType.WOOD)
+                            .noOcclusion()
+                            .noCollission()
+            );
+
+    public static final DeferredBlock<HalfDecorBlock> HALF_DECOR_CONTAINER =
+            BLOCKS.registerBlock(
+                    "half_decor_container",
+                    HalfDecorBlock::new,
                     BlockBehaviour.Properties.of()
                             .mapColor(MapColor.NONE)
                             .strength(0.2F)

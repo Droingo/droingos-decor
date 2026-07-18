@@ -5,6 +5,7 @@ import net.droingo.decor.api.BobbleheadRenderDefinition;
 import net.droingo.decor.api.DecorDefinition;
 import net.droingo.decor.api.GravityWallRenderDefinition;
 import net.droingo.decor.client.render.DecorContainerRenderer;
+import net.droingo.decor.client.render.HalfDecorRenderer;
 import net.droingo.decor.client.render.WallDecorRenderer;
 import net.droingo.decor.registry.DecorBlockEntities;
 import net.droingo.decor.registry.DecorDefinitionRegistry;
@@ -34,6 +35,11 @@ public final class DroingosDecorClient {
         );
 
         event.registerBlockEntityRenderer(
+                DecorBlockEntities.HALF_DECOR_CONTAINER.get(),
+                HalfDecorRenderer::new
+        );
+
+        event.registerBlockEntityRenderer(
                 DecorBlockEntities.WALL_DECOR_CONTAINER.get(),
                 WallDecorRenderer::new
         );
@@ -43,6 +49,36 @@ public final class DroingosDecorClient {
     public static void registerAdditionalModels(
             ModelEvent.RegisterAdditional event
     ) {
+        event.register(
+                ModelResourceLocation.standalone(
+                        net.minecraft.resources.ResourceLocation
+                                .fromNamespaceAndPath(
+                                        DroingosDecor.MOD_ID,
+                                        "block/earth_roamer_body"
+                                )
+                )
+        );
+
+        event.register(
+                ModelResourceLocation.standalone(
+                        net.minecraft.resources.ResourceLocation
+                                .fromNamespaceAndPath(
+                                        DroingosDecor.MOD_ID,
+                                        "block/earth_roamer_front_wheels"
+                                )
+                )
+        );
+
+        event.register(
+                ModelResourceLocation.standalone(
+                        net.minecraft.resources.ResourceLocation
+                                .fromNamespaceAndPath(
+                                        DroingosDecor.MOD_ID,
+                                        "block/earth_roamer_rear_wheels"
+                                )
+                )
+        );
+
         for (DecorDefinition definition : DecorDefinitionRegistry.all()) {
             BobbleheadRenderDefinition bobblehead =
                     definition.bobbleheadRender();

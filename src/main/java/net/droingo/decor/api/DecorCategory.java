@@ -4,6 +4,7 @@ import net.minecraft.network.chat.Component;
 
 public enum DecorCategory {
     BOBBLEHEADS("bobbleheads", 0),
+    HALF_BLOCKS("half_blocks", 5),
     WALL_DECOR("wall_decor", 10),
     HANGING_DECOR("hanging_decor", 20),
     SMALL_DECOR("small_decor", 30),
@@ -15,13 +16,21 @@ public enum DecorCategory {
     private final String translationKeyPart;
     private final int order;
 
-    DecorCategory(String translationKeyPart, int order) {
-        this.translationKeyPart = translationKeyPart;
+    DecorCategory(
+            String translationKeyPart,
+            int order
+    ) {
+        this.translationKeyPart =
+                translationKeyPart;
+
         this.order = order;
     }
 
     public Component title() {
-        return Component.translatable("itemGroup.droingos_decor.category." + translationKeyPart);
+        return Component.translatable(
+                "itemGroup.droingos_decor.category."
+                        + translationKeyPart
+        );
     }
 
     public int order() {

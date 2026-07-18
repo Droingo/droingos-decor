@@ -1,0 +1,8 @@
+{
+    "pumpkin_caw":  {
+                        "subtitle":  "subtitles.droingos_decor.pumpkin_caw",
+                        "sounds":  [
+                                       "droingos_decor:pumpkin_caw"
+                                   ]
+                    }
+}
