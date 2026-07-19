@@ -1,6 +1,0 @@
-{
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "droingos_decor:item/creative_header_small_decor_1"
-  }
-}

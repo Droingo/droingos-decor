@@ -41,7 +41,7 @@ public final class DroingosDecorClient {
                 DecorEntities.BEAST_SKULL_SEAT.get(),
                 BeastSkullSeatRenderer::new
         );
-        event.registerBlockEntityRenderer(
+event.registerBlockEntityRenderer(
                 DecorBlockEntities.CEILING_PLANT.get(),
                 CeilingPlantRenderer::new
         );

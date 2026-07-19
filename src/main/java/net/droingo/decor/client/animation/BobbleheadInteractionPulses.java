@@ -1,6 +1,7 @@
 package net.droingo.decor.client.animation;
 
 import net.droingo.decor.content.DecorContainerBlockEntity;
+import net.droingo.decor.content.TinyDecorItem;
 
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -23,13 +24,13 @@ public final class BobbleheadInteractionPulses {
             DecorContainerBlockEntity container,
             int slot
     ) {
-        if (container == null || slot < 0 || slot >= 4) {
+        if (container == null || slot < 0 || slot >= TinyDecorItem.SLOT_COUNT) {
             return;
         }
 
         boolean[] slots = PULSES.computeIfAbsent(
                 container,
-                ignored -> new boolean[4]
+                ignored -> new boolean[TinyDecorItem.SLOT_COUNT]
         );
 
         slots[slot] = true;
@@ -39,7 +40,7 @@ public final class BobbleheadInteractionPulses {
             DecorContainerBlockEntity container,
             int slot
     ) {
-        if (container == null || slot < 0 || slot >= 4) {
+        if (container == null || slot < 0 || slot >= TinyDecorItem.SLOT_COUNT) {
             return false;
         }
 

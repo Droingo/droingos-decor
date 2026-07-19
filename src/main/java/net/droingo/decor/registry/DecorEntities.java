@@ -26,8 +26,7 @@ public final class DecorEntities {
                             .updateInterval(1)
                             .build("beast_skull_seat")
             );
-
-    private DecorEntities() {
+private DecorEntities() {
     }
 
     public static void register(IEventBus bus) {

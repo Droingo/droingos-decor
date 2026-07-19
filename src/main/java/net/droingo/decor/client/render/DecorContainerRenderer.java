@@ -9,6 +9,7 @@ import net.droingo.decor.api.DecorDefinition;
 import net.droingo.decor.client.animation.BobbleheadInteractionPulses;
 import net.droingo.decor.client.animation.BobbleheadMotionState;
 import net.droingo.decor.content.DecorContainerBlockEntity;
+import net.droingo.decor.content.TinyDecorItem;
 import net.droingo.decor.registry.DecorDefinitionRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -45,7 +46,7 @@ public final class DecorContainerRenderer implements BlockEntityRenderer<DecorCo
             int packedLight,
             int packedOverlay
     ) {
-        for (int slot = 0; slot < 4; slot++) {
+        for (int slot = 0; slot < TinyDecorItem.SLOT_COUNT; slot++) {
             ResourceLocation id = blockEntity.getDecorId(slot);
             DecorDefinition definition = id == null ? null : DecorDefinitionRegistry.get(id);
 
@@ -77,8 +78,8 @@ public final class DecorContainerRenderer implements BlockEntityRenderer<DecorCo
             int packedOverlay
     ) {
         BobbleheadRenderDefinition render = definition.bobbleheadRender();
-        double centreX = slot % 2 == 0 ? 0.25D : 0.75D;
-        double centreZ = slot < 2 ? 0.25D : 0.75D;
+        double centreX = TinyDecorItem.centreX(slot);
+        double centreZ = TinyDecorItem.centreZ(slot);
         float yawDegrees = blockEntity.getRotation(slot) * 22.5F;
 
         BobbleheadMotionState motion = getMotionState(blockEntity, slot);
@@ -142,7 +143,7 @@ public final class DecorContainerRenderer implements BlockEntityRenderer<DecorCo
     }
 
     private BobbleheadMotionState getMotionState(DecorContainerBlockEntity blockEntity, int slot) {
-        BobbleheadMotionState[] states = motionStates.computeIfAbsent(blockEntity, ignored -> new BobbleheadMotionState[4]);
+        BobbleheadMotionState[] states = motionStates.computeIfAbsent(blockEntity, ignored -> new BobbleheadMotionState[TinyDecorItem.SLOT_COUNT]);
         if (states[slot] == null) {
             states[slot] = new BobbleheadMotionState();
         }

@@ -66,7 +66,7 @@ public final class DecorContainerBlock extends BaseEntityBlock {
 
         VoxelShape combined = Shapes.empty();
 
-        for (int slot = 0; slot < 4; slot++) {
+        for (int slot = 0; slot < TinyDecorItem.SLOT_COUNT; slot++) {
             ResourceLocation id = container.getDecorId(slot);
             DecorDefinition definition = id == null ? null : DecorDefinitionRegistry.get(id);
 

@@ -1,3 +1,25 @@
+$ErrorActionPreference = "Stop"
+
+$Utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+$Root = (Get-Location).Path
+
+function Write-Utf8NoBom {
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)][string]$Content
+    )
+
+    $FullPath = Join-Path $Root $Path
+    $Directory = Split-Path -Parent $FullPath
+
+    if (-not (Test-Path -LiteralPath $Directory)) {
+        New-Item -ItemType Directory -Path $Directory -Force | Out-Null
+    }
+
+    [System.IO.File]::WriteAllText($FullPath, $Content, $Utf8NoBom)
+}
+
+Write-Utf8NoBom "src/main/java/net/droingo/decor/content/TinyDecorItem.java" @'
 package net.droingo.decor.content;
 
 import net.droingo.decor.DroingosDecor;
@@ -15,8 +37,6 @@ import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
 public final class TinyDecorItem extends Item {
-    public static final int SLOT_COUNT = 9;
-
     private final ResourceLocation decorId;
 
     public TinyDecorItem(
@@ -25,7 +45,7 @@ public final class TinyDecorItem extends Item {
     ) {
         super(properties);
 
-        decorId =
+        this.decorId =
                 ResourceLocation.fromNamespaceAndPath(
                         DroingosDecor.MOD_ID,
                         id
@@ -44,6 +64,12 @@ public final class TinyDecorItem extends Item {
         BlockState clickedState =
                 level.getBlockState(clickedPos);
 
+        /*
+         * Levers and buttons occupy the neighbouring air block rather than
+         * the solid block they are attached to. Redirect placement back to
+         * their support block so a bobblehead can still be placed on top of
+         * that block.
+         */
         BlockPos supportPos =
                 resolveSupportBlock(
                         clickedPos,
@@ -147,8 +173,7 @@ public final class TinyDecorItem extends Item {
                             .getAbilities()
                             .instabuild
             ) {
-                context.getItemInHand()
-                        .shrink(1);
+                context.getItemInHand().shrink(1);
             }
         }
 
@@ -179,20 +204,15 @@ public final class TinyDecorItem extends Item {
                 );
 
         return switch (attachFace) {
-            case FLOOR ->
-                    clickedPos.below();
-
-            case CEILING ->
-                    clickedPos.above();
-
-            case WALL ->
-                    clickedPos.relative(
-                            state.getValue(
-                                            BlockStateProperties
-                                                    .HORIZONTAL_FACING
-                                    )
-                                    .getOpposite()
-                    );
+            case FLOOR -> clickedPos.below();
+            case CEILING -> clickedPos.above();
+            case WALL -> clickedPos.relative(
+                    state.getValue(
+                                    BlockStateProperties
+                                            .HORIZONTAL_FACING
+                            )
+                            .getOpposite()
+            );
         };
     }
 
@@ -200,28 +220,29 @@ public final class TinyDecorItem extends Item {
             double x,
             double z
     ) {
-        int column =
-                Math.min(
-                        2,
-                        (int) Math.floor(x * 3.0D)
-                );
-
-        int row =
-                Math.min(
-                        2,
-                        (int) Math.floor(z * 3.0D)
-                );
-
-        return row * 3 + column;
-    }
-
-    public static double centreX(int slot) {
-        int column = slot % 3;
-        return (column + 0.5D) / 3.0D;
-    }
-
-    public static double centreZ(int slot) {
-        int row = slot / 3;
-        return (row + 0.5D) / 3.0D;
+        return (
+                z >= 0.5D
+                        ? 2
+                        : 0
+        ) + (
+                x >= 0.5D
+                        ? 1
+                        : 0
+        );
     }
 }
+'@
+
+Write-Host ""
+Write-Host "Updated bobblehead placement to work through attached levers and buttons."
+Write-Host "Building..."
+Write-Host ""
+
+& ".\gradlew.bat" build
+
+if ($LASTEXITCODE -ne 0) {
+    throw "Build failed with exit code $LASTEXITCODE"
+}
+
+Write-Host ""
+Write-Host "Build successful."

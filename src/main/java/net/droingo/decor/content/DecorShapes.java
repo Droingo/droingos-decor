@@ -13,8 +13,8 @@ public final class DecorShapes {
             int slot,
             int rotationStep
     ) {
-        double centreX = slot % 2 == 0 ? 0.25D : 0.75D;
-        double centreZ = slot < 2 ? 0.25D : 0.75D;
+        double centreX = TinyDecorItem.centreX(slot);
+        double centreZ = TinyDecorItem.centreZ(slot);
 
         double angleRadians = Math.toRadians(rotationStep * 22.5D);
         double cos = Math.cos(angleRadians);

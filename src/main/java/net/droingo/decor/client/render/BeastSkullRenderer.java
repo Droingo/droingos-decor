@@ -166,7 +166,13 @@ public final class BeastSkullRenderer
                                     BeastSkullBlock.FACING
                             );
 
-            return outward.toYRot() + 180.0F;
+            return switch (outward) {
+                case NORTH -> 180.0F;
+                case SOUTH -> 0.0F;
+                case EAST -> -90.0F;
+                case WEST -> 90.0F;
+                default -> 0.0F;
+            };
         }
 
         return be.getBlockState()
