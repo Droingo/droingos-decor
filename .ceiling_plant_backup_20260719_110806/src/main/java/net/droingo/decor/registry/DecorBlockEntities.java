@@ -1,8 +1,6 @@
 package net.droingo.decor.registry;
 
 import net.droingo.decor.DroingosDecor;
-import net.droingo.decor.content.CeilingPlantBlockEntity;
-import net.droingo.decor.content.BeastSkullBlockEntity;
 import net.droingo.decor.content.DecorContainerBlockEntity;
 import net.droingo.decor.content.HalfDecorBlockEntity;
 import net.droingo.decor.content.WallDecorBlockEntity;
@@ -19,26 +17,6 @@ public final class DecorBlockEntities {
                     DroingosDecor.MOD_ID
             );
 
-    public static final DeferredHolder<
-            BlockEntityType<?>,
-            BlockEntityType<BeastSkullBlockEntity>
-            > BEAST_SKULL = TYPES.register(
-            "the_beast_skull",
-            () -> BlockEntityType.Builder.of(
-                    BeastSkullBlockEntity::new,
-                    DecorBlocks.THE_BEAST_SKULL.get()
-            ).build(null)
-    );
-    public static final DeferredHolder<
-            BlockEntityType<?>,
-            BlockEntityType<CeilingPlantBlockEntity>
-            > CEILING_PLANT = TYPES.register(
-            "ceiling_plant",
-            () -> BlockEntityType.Builder.of(
-                    CeilingPlantBlockEntity::new,
-                    DecorBlocks.CEILING_PLANT.get()
-            ).build(null)
-    );
     public static final DeferredHolder<
             BlockEntityType<?>,
             BlockEntityType<DecorContainerBlockEntity>

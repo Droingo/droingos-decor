@@ -48,15 +48,6 @@ public final class DecorDefinitionRegistry {
 
         bootstrapped = true;
 
-        ResourceLocation beastSkullId = id("the_beast_skull");
-        register(
-                DecorDefinition.builder(beastSkullId)
-                        .category(DecorCategory.FURNITURE)
-                        .placement(DecorPlacementType.LARGE)
-                        .item(DecorItems.THE_BEAST_SKULL::get)
-                        .bounds(-0.55D, 0.0D, -0.55D, 0.55D, 1.95D, 0.85D)
-                        .build()
-        );
         ResourceLocation parrotId = id("bobble_parrot");
 
         register(
@@ -240,26 +231,6 @@ public final class DecorDefinitionRegistry {
                             return net.minecraft.world.InteractionResult
                                     .sidedSuccess(level.isClientSide);
                         })
-                        .build()
-        );
-        ResourceLocation ceilingPlantId =
-                id("potted_plant_ceiling");
-
-        register(
-                DecorDefinition.builder(ceilingPlantId)
-                        .category(DecorCategory.HANGING_DECOR)
-                        .placement(DecorPlacementType.HANGING)
-                        .item(
-                                DecorItems.POTTED_PLANT_CEILING::get
-                        )
-                        .bounds(
-                                -0.5D,
-                                -0.125D,
-                                -0.5D,
-                                0.5D,
-                                1.0D,
-                                0.5D
-                        )
                         .build()
         );
         ResourceLocation sweaterId = id("hanging_sweater");

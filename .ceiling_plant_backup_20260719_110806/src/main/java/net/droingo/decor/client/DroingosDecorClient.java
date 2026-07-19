@@ -4,14 +4,10 @@ import net.droingo.decor.DroingosDecor;
 import net.droingo.decor.api.BobbleheadRenderDefinition;
 import net.droingo.decor.api.DecorDefinition;
 import net.droingo.decor.api.GravityWallRenderDefinition;
-import net.droingo.decor.client.render.CeilingPlantRenderer;
-import net.droingo.decor.client.render.BeastSkullRenderer;
-import net.droingo.decor.client.render.BeastSkullSeatRenderer;
 import net.droingo.decor.client.render.DecorContainerRenderer;
 import net.droingo.decor.client.render.HalfDecorRenderer;
 import net.droingo.decor.client.render.WallDecorRenderer;
 import net.droingo.decor.registry.DecorBlockEntities;
-import net.droingo.decor.registry.DecorEntities;
 import net.droingo.decor.registry.DecorDefinitionRegistry;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.neoforged.api.distmarker.Dist;
@@ -34,18 +30,6 @@ public final class DroingosDecorClient {
             EntityRenderersEvent.RegisterRenderers event
     ) {
         event.registerBlockEntityRenderer(
-                DecorBlockEntities.BEAST_SKULL.get(),
-                BeastSkullRenderer::new
-        );
-        event.registerEntityRenderer(
-                DecorEntities.BEAST_SKULL_SEAT.get(),
-                BeastSkullSeatRenderer::new
-        );
-        event.registerBlockEntityRenderer(
-                DecorBlockEntities.CEILING_PLANT.get(),
-                CeilingPlantRenderer::new
-        );
-        event.registerBlockEntityRenderer(
                 DecorBlockEntities.DECOR_CONTAINER.get(),
                 DecorContainerRenderer::new
         );
@@ -65,63 +49,6 @@ public final class DroingosDecorClient {
     public static void registerAdditionalModels(
             ModelEvent.RegisterAdditional event
     ) {
-        for (String modelName : java.util.List.of(
-                "the_beast_floor_static",
-                "the_beast_floor_jaw",
-                "the_beast_wall_static",
-                "the_beast_wall_jaw",
-                "the_beast_ceiling_static",
-                "the_beast_ceiling_jaw"
-        )) {
-            event.register(
-                    ModelResourceLocation.standalone(
-                            net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(
-                                    DroingosDecor.MOD_ID,
-                                    "block/" + modelName
-                            )
-                    )
-            );
-        }
-        event.register(
-                ModelResourceLocation.standalone(
-                        net.minecraft.resources.ResourceLocation
-                                .fromNamespaceAndPath(
-                                        DroingosDecor.MOD_ID,
-                                        "block/potted_plant_ceiling_pot_vine0"
-                                )
-                )
-        );
-
-        event.register(
-                ModelResourceLocation.standalone(
-                        net.minecraft.resources.ResourceLocation
-                                .fromNamespaceAndPath(
-                                        DroingosDecor.MOD_ID,
-                                        "block/potted_plant_ceiling_vine1"
-                                )
-                )
-        );
-
-        event.register(
-                ModelResourceLocation.standalone(
-                        net.minecraft.resources.ResourceLocation
-                                .fromNamespaceAndPath(
-                                        DroingosDecor.MOD_ID,
-                                        "block/potted_plant_ceiling_vine2"
-                                )
-                )
-        );
-
-        event.register(
-                ModelResourceLocation.standalone(
-                        net.minecraft.resources.ResourceLocation
-                                .fromNamespaceAndPath(
-                                        DroingosDecor.MOD_ID,
-                                        "block/potted_plant_ceiling_vine3"
-                                )
-                )
-        );
-
         event.register(
                 ModelResourceLocation.standalone(
                         net.minecraft.resources.ResourceLocation

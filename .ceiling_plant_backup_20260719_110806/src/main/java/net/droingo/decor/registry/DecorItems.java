@@ -2,8 +2,6 @@ package net.droingo.decor.registry;
 
 import net.droingo.decor.DroingosDecor;
 import net.droingo.decor.api.DecorCategory;
-import net.droingo.decor.content.CeilingPlantItem;
-import net.droingo.decor.content.BeastSkullItem;
 import net.droingo.decor.content.HalfDecorItem;
 import net.droingo.decor.content.TinyDecorItem;
 import net.droingo.decor.content.WallDecorItem;
@@ -20,18 +18,6 @@ public final class DecorItems {
     public static final DeferredRegister.Items ITEMS =
             DeferredRegister.createItems(DroingosDecor.MOD_ID);
 
-    public static final DeferredItem<Item> THE_BEAST_SKULL =
-            ITEMS.register(
-                    "the_beast_skull",
-                    () -> new BeastSkullItem(new Item.Properties().stacksTo(1))
-            );
-    public static final DeferredItem<Item> POTTED_PLANT_CEILING =
-            ITEMS.register(
-                    "potted_plant_ceiling",
-                    () -> new CeilingPlantItem(
-                            new Item.Properties()
-                    )
-            );
     public static final DeferredItem<Item> EARTH_ROAMER = ITEMS.register(
             "earth_roamer",
             () -> new HalfDecorItem(new Item.Properties())

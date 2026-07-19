@@ -7,6 +7,7 @@ import net.droingo.decor.registry.DecorBlocks;
 import net.droingo.decor.registry.DecorCreativeTabs;
 import net.droingo.decor.registry.DecorDefinitionRegistry;
 import net.droingo.decor.registry.DecorItems;
+import net.droingo.decor.registry.DecorEntities;
 import net.droingo.decor.registry.DecorSounds;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModList;
@@ -23,6 +24,7 @@ public final class DroingosDecor {
         DecorItems.register(modBus);
         DecorSounds.register(modBus);
         DecorBlockEntities.register(modBus);
+        DecorEntities.register(modBus);
         DecorDefinitionRegistry.bootstrap();
         DecorCreativeTabs.register(modBus);
 

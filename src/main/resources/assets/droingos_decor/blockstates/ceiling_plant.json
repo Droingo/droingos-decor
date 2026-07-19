@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "rotation=0": { "model": "minecraft:block/air" },
+    "rotation=1": { "model": "minecraft:block/air" },
+    "rotation=2": { "model": "minecraft:block/air" },
+    "rotation=3": { "model": "minecraft:block/air" },
+    "rotation=4": { "model": "minecraft:block/air" },
+    "rotation=5": { "model": "minecraft:block/air" },
+    "rotation=6": { "model": "minecraft:block/air" },
+    "rotation=7": { "model": "minecraft:block/air" },
+    "rotation=8": { "model": "minecraft:block/air" },
+    "rotation=9": { "model": "minecraft:block/air" },
+    "rotation=10": { "model": "minecraft:block/air" },
+    "rotation=11": { "model": "minecraft:block/air" },
+    "rotation=12": { "model": "minecraft:block/air" },
+    "rotation=13": { "model": "minecraft:block/air" },
+    "rotation=14": { "model": "minecraft:block/air" },
+    "rotation=15": { "model": "minecraft:block/air" }
+  }
+}
