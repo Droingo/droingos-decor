@@ -10,6 +10,7 @@ import net.droingo.decor.client.render.BeastSkullSeatRenderer;
 import net.droingo.decor.client.render.DecorContainerRenderer;
 import net.droingo.decor.client.render.HalfDecorRenderer;
 import net.droingo.decor.client.render.WallDecorRenderer;
+import net.droingo.decor.client.render.FairyLightsTestRenderer;
 import net.droingo.decor.registry.DecorBlockEntities;
 import net.droingo.decor.registry.DecorEntities;
 import net.droingo.decor.registry.DecorDefinitionRegistry;
@@ -46,6 +47,11 @@ event.registerBlockEntityRenderer(
                 CeilingPlantRenderer::new
         );
         event.registerBlockEntityRenderer(
+                DecorBlockEntities.FAIRY_LIGHTS_TEST.get(),
+                FairyLightsTestRenderer::new
+        );
+
+        event.registerBlockEntityRenderer(
                 DecorBlockEntities.DECOR_CONTAINER.get(),
                 DecorContainerRenderer::new
         );
@@ -66,6 +72,11 @@ event.registerBlockEntityRenderer(
             ModelEvent.RegisterAdditional event
     ) {
         for (String modelName : java.util.List.of(
+                "fairy_lights_wire",
+                "fairy_lights_bulb",
+                "fairy_lights_glow",
+                "fairy_lights_test_normal",
+                "fairy_lights_test_glow",
                 "the_beast_floor_static",
                 "the_beast_floor_jaw",
                 "the_beast_wall_static",

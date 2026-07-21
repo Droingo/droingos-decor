@@ -7,6 +7,7 @@ import net.droingo.decor.content.BeastSkullItem;
 import net.droingo.decor.content.HalfDecorItem;
 import net.droingo.decor.content.TinyDecorItem;
 import net.droingo.decor.content.WallDecorItem;
+import net.droingo.decor.content.FairyLightsItem;
 import net.droingo.decor.content.overlay.OverlayItem;
 import net.minecraft.world.item.Item;
 import net.neoforged.bus.api.IEventBus;
@@ -19,6 +20,14 @@ import java.util.List;
 public final class DecorItems {
     public static final DeferredRegister.Items ITEMS =
             DeferredRegister.createItems(DroingosDecor.MOD_ID);
+
+    public static final DeferredItem<Item> FAIRY_LIGHTS =
+            ITEMS.register(
+                    "fairy_lights",
+                    () -> new FairyLightsItem(
+                            new Item.Properties().stacksTo(16)
+                    )
+            );
 
     public static final DeferredItem<Item> THE_BEAST_SKULL =
             ITEMS.register(

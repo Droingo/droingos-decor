@@ -1,0 +1,206 @@
+package net.droingo.decor.content;
+
+import com.mojang.serialization.MapCodec;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.DyeItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jetbrains.annotations.Nullable;
+
+public final class FairyLightsTestBlock extends BaseEntityBlock {
+    public static final MapCodec<FairyLightsTestBlock> CODEC =
+            simpleCodec(FairyLightsTestBlock::new);
+
+    private static final double HALF_SIZE = 1.5D / 16.0D;
+
+    public FairyLightsTestBlock(Properties properties) {
+        super(properties);
+    }
+
+    @Override
+    protected MapCodec<? extends BaseEntityBlock> codec() {
+        return CODEC;
+    }
+
+    @Override
+    public RenderShape getRenderShape(BlockState state) {
+        return RenderShape.INVISIBLE;
+    }
+
+    @Nullable
+    @Override
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new FairyLightsTestBlockEntity(pos, state);
+    }
+
+    @Override
+    protected ItemInteractionResult useItemOn(
+            ItemStack stack,
+            BlockState state,
+            Level level,
+            BlockPos pos,
+            Player player,
+            InteractionHand hand,
+            BlockHitResult hit
+    ) {
+        if (!(stack.getItem() instanceof DyeItem dyeItem)) {
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }
+
+        if (!(level.getBlockEntity(pos)
+                instanceof FairyLightsTestBlockEntity lights)) {
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }
+
+        Vec3 target = lights.nearestMountPoint(hit.getLocation());
+
+        if (target == null) {
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }
+
+        if (!level.isClientSide) {
+            lights.dyeAt(target, dyeItem.getDyeColor());
+
+            if (!player.getAbilities().instabuild) {
+                stack.shrink(1);
+            }
+
+            player.displayClientMessage(
+                    Component.literal(
+                            "Fairy-light point dyed "
+                                    + dyeItem.getDyeColor().getName()
+                                    + "."
+                    ),
+                    true
+            );
+        }
+
+        return ItemInteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    @Override
+    protected InteractionResult useWithoutItem(
+            BlockState state,
+            Level level,
+            BlockPos pos,
+            Player player,
+            BlockHitResult hit
+    ) {
+        if (!(level.getBlockEntity(pos)
+                instanceof FairyLightsTestBlockEntity lights)) {
+            return InteractionResult.PASS;
+        }
+
+        Vec3 target = lights.nearestMountPoint(hit.getLocation());
+
+        if (target == null) {
+            return InteractionResult.PASS;
+        }
+
+        if (!level.isClientSide) {
+            if (player.isShiftKeyDown()) {
+                lights.adjustSagAt(target, -0.08D);
+            } else {
+                lights.cycleModeAt(target);
+            }
+
+            player.displayClientMessage(
+                    Component.literal(
+                            "Fairy lights: "
+                                    + lights.modeAt(target).displayName()
+                                    + " | Sag "
+                                    + Math.round(lights.sagAt(target) * 100.0D)
+                                    + "% | Strings here "
+                                    + lights.countAt(target)
+                    ),
+                    true
+            );
+        }
+
+        return InteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    @Override
+    protected void onRemove(
+            BlockState state,
+            Level level,
+            BlockPos pos,
+            BlockState newState,
+            boolean movedByPiston
+    ) {
+        if (!state.is(newState.getBlock())
+                && level.getBlockEntity(pos)
+                instanceof FairyLightsTestBlockEntity lights) {
+            lights.detachAllFromRemoteAnchors();
+        }
+
+        super.onRemove(state, level, pos, newState, movedByPiston);
+    }
+
+    @Override
+    protected VoxelShape getShape(
+            BlockState state,
+            BlockGetter level,
+            BlockPos pos,
+            CollisionContext context
+    ) {
+        if (!(level.getBlockEntity(pos)
+                instanceof FairyLightsTestBlockEntity lights)) {
+            return Shapes.empty();
+        }
+
+        VoxelShape shape = Shapes.empty();
+
+        for (FairyLightsTestBlockEntity.Connection connection
+                : lights.connections()) {
+            Vec3 local = lights.localMountPoint(connection).subtract(
+                    pos.getX(),
+                    pos.getY(),
+                    pos.getZ()
+            );
+
+            shape = Shapes.or(
+                    shape,
+                    Shapes.box(
+                            clamp(local.x - HALF_SIZE),
+                            clamp(local.y - HALF_SIZE),
+                            clamp(local.z - HALF_SIZE),
+                            clamp(local.x + HALF_SIZE),
+                            clamp(local.y + HALF_SIZE),
+                            clamp(local.z + HALF_SIZE)
+                    )
+            );
+        }
+
+        return shape.optimize();
+    }
+
+    @Override
+    protected VoxelShape getCollisionShape(
+            BlockState state,
+            BlockGetter level,
+            BlockPos pos,
+            CollisionContext context
+    ) {
+        return Shapes.empty();
+    }
+
+    private static double clamp(double value) {
+        return Math.max(0.0D, Math.min(1.0D, value));
+    }
+}

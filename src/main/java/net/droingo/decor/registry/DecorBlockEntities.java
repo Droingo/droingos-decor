@@ -6,6 +6,7 @@ import net.droingo.decor.content.BeastSkullBlockEntity;
 import net.droingo.decor.content.DecorContainerBlockEntity;
 import net.droingo.decor.content.HalfDecorBlockEntity;
 import net.droingo.decor.content.WallDecorBlockEntity;
+import net.droingo.decor.content.FairyLightsTestBlockEntity;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
@@ -39,6 +40,17 @@ public final class DecorBlockEntities {
                     DecorBlocks.CEILING_PLANT.get()
             ).build(null)
     );
+    public static final DeferredHolder<
+            BlockEntityType<?>,
+            BlockEntityType<FairyLightsTestBlockEntity>
+            > FAIRY_LIGHTS_TEST = TYPES.register(
+            "fairy_lights_test",
+            () -> BlockEntityType.Builder.of(
+                    FairyLightsTestBlockEntity::new,
+                    DecorBlocks.FAIRY_LIGHTS_TEST.get()
+            ).build(null)
+    );
+
     public static final DeferredHolder<
             BlockEntityType<?>,
             BlockEntityType<DecorContainerBlockEntity>

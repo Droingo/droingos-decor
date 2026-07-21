@@ -48,6 +48,15 @@ public final class DecorDefinitionRegistry {
 
         bootstrapped = true;
 
+        ResourceLocation fairyLightsId = id("fairy_lights");
+        register(
+                DecorDefinition.builder(fairyLightsId)
+                        .category(DecorCategory.LIGHTING)
+                        .placement(DecorPlacementType.SMALL)
+                        .item(DecorItems.FAIRY_LIGHTS::get)
+                        .build()
+        );
+
         ResourceLocation beastSkullId = id("the_beast_skull");
         register(
                 DecorDefinition.builder(beastSkullId)

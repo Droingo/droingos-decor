@@ -6,6 +6,7 @@ import net.droingo.decor.content.BeastSkullBlock;
 import net.droingo.decor.content.DecorContainerBlock;
 import net.droingo.decor.content.HalfDecorBlock;
 import net.droingo.decor.content.WallDecorBlock;
+import net.droingo.decor.content.FairyLightsTestBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
@@ -39,6 +40,19 @@ public final class DecorBlocks {
                             .noOcclusion()
                             .noCollission()
             );
+    public static final DeferredBlock<FairyLightsTestBlock> FAIRY_LIGHTS_TEST =
+            BLOCKS.registerBlock(
+                    "fairy_lights_test",
+                    FairyLightsTestBlock::new,
+                    BlockBehaviour.Properties.of()
+                            .mapColor(MapColor.NONE)
+                            .strength(0.2F)
+                            .sound(SoundType.WOOD)
+                            .lightLevel(state -> 4)
+                            .noOcclusion()
+                            .noCollission()
+            );
+
     public static final DeferredBlock<DecorContainerBlock> DECOR_CONTAINER =
             BLOCKS.registerBlock(
                     "decor_container",
